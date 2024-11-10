@@ -1,12 +1,24 @@
+import os
 from typing import List, Optional
 
 import aiohttp
 import pymupdf  # type: ignore
 import pymupdf4llm  # type: ignore
+from jinja2 import Environment, FileSystemLoader
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
+
+
+def load_template(template_name: str, **kwargs) -> str:
+    """
+    Load a Jinja template an fill it with the kwargs.
+    """
+    template_dir = os.path.join(os.path.dirname(__file__), "templates")
+    env = Environment(loader=FileSystemLoader(template_dir))
+    template = env.get_template(template_name)
+    return template.render(kwargs)
 
 
 def load_documents(folder: str, pattern: str = "**/*.md") -> List[Document]:

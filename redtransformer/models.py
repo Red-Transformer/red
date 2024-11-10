@@ -65,11 +65,12 @@ def get_langchain_llm(
             return ChatOpenAI(
                 model=LAMBDA_CONFIG.model_name,
                 base_url=LAMBDA_CONFIG.base_url,
-                api_key=LAMBDA_CONFIG.api_key,
+                api_key=LAMBDA_CONFIG.api_key,  # type: ignore
             )
         case "openai":
             return ChatOpenAI(
-                model=OPENAI_CONFIG.model_name, api_key=OPENAI_CONFIG.api_key
+                model=OPENAI_CONFIG.model_name,
+                api_key=OPENAI_CONFIG.api_key,  # type: ignore
             )
         case "ollama":
             return ChatOllama(model=OLLAMA_CONFIG.model_name)
