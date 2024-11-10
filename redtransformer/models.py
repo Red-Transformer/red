@@ -3,6 +3,8 @@ from typing import Literal
 
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from openai import OpenAI
 from pydantic import BaseModel
 
@@ -53,10 +55,24 @@ def get_openai_client(
             )
 
 
-def get_langchain_llm(model_name: Literal["google"], **kwargs):
+def get_langchain_llm(
+    model_name: Literal["google", "lambda", "openai", "ollama"], **kwargs
+):
     match model_name:
         case "google":
             return ChatGoogleGenerativeAI(model=GOOGLE_CONFIG.model_name, **kwargs)
+        case "lambda":
+            return ChatOpenAI(
+                model=LAMBDA_CONFIG.model_name,
+                base_url=LAMBDA_CONFIG.base_url,
+                api_key=LAMBDA_CONFIG.api_key,
+            )
+        case "openai":
+            return ChatOpenAI(
+                model=OPENAI_CONFIG.model_name, api_key=OPENAI_CONFIG.api_key
+            )
+        case "ollama":
+            return ChatOllama(model=OLLAMA_CONFIG.model_name)
 
 
 def quick_talk_openai(
