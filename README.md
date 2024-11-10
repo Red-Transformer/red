@@ -44,6 +44,10 @@ pip install poetry
 poetry install
 ```
 
+## Environment configuration
+
+Copy the `.env-example` file into `.env` and add your API keys.
+
 ## VSCode configuration
 
 Enable Ruff as formater and MyPy as type checker:

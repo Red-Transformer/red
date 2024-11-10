@@ -1,18 +1,41 @@
-from typing import Optional
+from typing import List, Optional
 
 import aiohttp
 import pymupdf  # type: ignore
 import pymupdf4llm  # type: ignore
+from langchain_community.document_loaders import DirectoryLoader
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 
 
-def pdf_to_text(file_path, num_pages: Optional[int] = None, min_size: int = 100):
+def load_documents(folder: str, pattern: str = "**/*.md") -> List[Document]:
+    """
+    Load documents from folder using Langchain functions.
+    """
+    loader = DirectoryLoader(folder, glob=pattern)
+    documents = loader.load()
+    return documents
+
+
+def documents_to_splits(
+    documents: List[Document], chunk_overlap: int = 200, chunk_size: int = 1000, *args
+):
+    """
+    Converts Langchain documents to text splits, which can be used to create a RAG database.
+    """
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_overlap=chunk_overlap, chunk_size=chunk_size
+    )
+    splits = text_splitter.split_documents(documents)
+    print(f"Split the documents into {len(splits)} chunks.")
+
+    return splits
+
+
+def pdf_to_text(file_path, num_pages: Optional[int] = None, min_size: int = 100) -> str:
     """
     Extract text from the PDF file using pymupdf4llm, falling back to pymupdf and pypdf if necessary.
-
-    :param num_pages:
-    :param min_size:
-    :return:
     """
     try:
         if num_pages is None:
@@ -47,13 +70,9 @@ def pdf_to_text(file_path, num_pages: Optional[int] = None, min_size: int = 100)
     return text
 
 
-async def download_file(file_link: str, dest_path: str):
+async def download_file(file_link: str, dest_path: str) -> str:
     """
     Download a file from a given link to a specified destination path, not necessarily from ArXiv.
-
-    :param file_link:
-    :param dest_path:
-    :return:
     """
     async with aiohttp.ClientSession() as session, session.get(file_link) as response:
         if response.status != 200:
