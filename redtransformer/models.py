@@ -12,7 +12,7 @@ load_dotenv()
 
 
 class ModelConfig(BaseModel):
-    model_name: str = "none"
+    name: str = "test"
     base_url: str = "none"
     api_key: str = "none"
 
@@ -42,15 +42,15 @@ def get_openai_client(
 ) -> (str, OpenAI):  # type: ignore
     match model_name:
         case "openai":
-            return OPENAI_CONFIG.model_name, OpenAI()
+            return OPENAI_CONFIG.name, OpenAI()
 
         case "ollama":
-            return OLLAMA_CONFIG.model_name, OpenAI(
+            return OLLAMA_CONFIG.name, OpenAI(
                 base_url=OLLAMA_CONFIG.base_url, api_key=OLLAMA_CONFIG.api_key
             )
 
         case "lambda":
-            return LAMBDA_CONFIG.model_name, OpenAI(
+            return LAMBDA_CONFIG.name, OpenAI(
                 base_url=LAMBDA_CONFIG.base_url, api_key=LAMBDA_CONFIG.api_key
             )
 
@@ -60,20 +60,20 @@ def get_langchain_llm(
 ):
     match model_name:
         case "google":
-            return ChatGoogleGenerativeAI(model=GOOGLE_CONFIG.model_name, **kwargs)
+            return ChatGoogleGenerativeAI(model=GOOGLE_CONFIG.name, **kwargs)
         case "lambda":
             return ChatOpenAI(
-                model=LAMBDA_CONFIG.model_name,
+                model=LAMBDA_CONFIG.name,
                 base_url=LAMBDA_CONFIG.base_url,
                 api_key=LAMBDA_CONFIG.api_key,  # type: ignore
             )
         case "openai":
             return ChatOpenAI(
-                model=OPENAI_CONFIG.model_name,
+                model=OPENAI_CONFIG.name,
                 api_key=OPENAI_CONFIG.api_key,  # type: ignore
             )
         case "ollama":
-            return ChatOllama(model=OLLAMA_CONFIG.model_name)
+            return ChatOllama(model=OLLAMA_CONFIG.name)
 
 
 def quick_talk_openai(
@@ -84,10 +84,11 @@ def quick_talk_openai(
     chat_completion = client.chat.completions.create(
         model=model_name, messages=[{"role": "user", "content": query}], **kwargs
     )
+
     return chat_completion.choices[0].message.content
 
 
 def quick_talk_langchain(query: str, model_name: Literal["google"], **kwargs):
     llm = get_langchain_llm(model_name)
     messages = [("human", query)]
-    return llm.invoke(messages).content
+    return llm.invoke(messages, **kwargs).content
